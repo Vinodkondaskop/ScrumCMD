@@ -1,10 +1,15 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import db from './db.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = 3002;
+const PORT = parseInt(process.env.PORT || '3002', 10);
 
 app.use(cors());
 app.use(express.json());
@@ -159,6 +164,13 @@ app.patch('/api/blockers/:id/resolve', (req, res) => {
     const resolvedDate = new Date().toISOString();
     db.prepare('UPDATE blockers SET status = ?, resolvedDate = ? WHERE id = ?').run('Resolved', resolvedDate, req.params.id);
     res.json({ success: true });
+});
+
+// ─── SERVE FRONTEND (Production) ─────────────────────────────
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
+app.get('*', (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // ─── START ───────────────────────────────────────────────────
