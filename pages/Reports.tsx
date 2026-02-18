@@ -69,7 +69,7 @@ const Reports: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h2 className={`text-xl font-semibold ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Reports & AI Insights</h2>
         <button onClick={exportReportCSV}
           className={`py-2 px-3 rounded text-sm font-medium flex items-center gap-1 border ${dc ? 'border-dark-border text-dark-text hover:bg-dark-surface' : 'border-atlassian-border text-atlassian-subtle hover:bg-atlassian-neutral'}`}>

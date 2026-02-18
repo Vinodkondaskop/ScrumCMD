@@ -35,8 +35,8 @@ const AssignTask: React.FC = () => {
     <div className="space-y-6">
       <h2 className={`text-xl font-semibold ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Assign Task</h2>
 
-      <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-12 lg:col-span-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="lg:col-span-8">
           <div className={`border rounded ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
             <div className={`px-6 py-4 border-b ${dc ? 'border-dark-border' : 'border-atlassian-border'}`}>
               <h3 className={`font-semibold text-sm ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Assign New Task</h3>
@@ -90,7 +90,7 @@ const AssignTask: React.FC = () => {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="lg:col-span-4 space-y-4">
           {[
             { icon: 'bolt', title: 'Quick Allocation', desc: 'Average task assignment takes less than 2 minutes.' },
             { icon: 'balance', title: 'Load Balancing', desc: 'View team capacity before assigning new tickets.' },

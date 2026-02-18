@@ -56,8 +56,8 @@ const Dashboard: React.FC = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-12 lg:col-span-4 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+                <div className="lg:col-span-4 space-y-6">
                     {/* Overdue Tasks */}
                     <div className={`border rounded flex flex-col ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
                         <div className={`px-5 py-3 border-b flex items-center justify-between ${dc ? 'border-dark-border' : 'border-atlassian-border'}`}>
@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {/* Recent Tasks Table */}
-                <div className="col-span-12 lg:col-span-8">
+                <div className="lg:col-span-8">
                     <div className={`border rounded flex flex-col ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
                         <div className={`px-5 py-3 border-b flex items-center justify-between ${dc ? 'border-dark-border' : 'border-atlassian-border'}`}>
                             <h3 className={`font-semibold text-sm ${dc ? 'text-dark-text-bright' : ''}`}>Recent Task Assignments</h3>

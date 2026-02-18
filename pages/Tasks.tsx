@@ -149,7 +149,7 @@ const Tasks: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h2 className={`text-xl font-semibold ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Master Task List</h2>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
@@ -263,7 +263,7 @@ const Tasks: React.FC = () => {
 
       {/* KANBAN BOARD VIEW */}
       {view === 'board' && (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kanbanCols.map(col => {
             const colTasks = filteredTasks.filter(t => t.status === col.key);
             return (
@@ -319,7 +319,7 @@ const Tasks: React.FC = () => {
 
       {/* Add Task Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className={`rounded-xl w-full max-w-lg border ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`} style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
             <div className={`px-6 py-4 border-b ${dc ? 'border-dark-border' : 'border-atlassian-border'}`}>
               <h3 className={`font-semibold ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Add Task</h3>
@@ -378,7 +378,7 @@ const Tasks: React.FC = () => {
 
       {/* Edit Task Modal with Notes */}
       {editingTask && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className={`rounded-xl w-full max-w-2xl border max-h-[90vh] flex flex-col ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`} style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
             <div className={`px-6 py-4 border-b flex items-center justify-between ${dc ? 'border-dark-border' : 'border-atlassian-border'}`}>
               <h3 className={`font-semibold ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>Edit Task</h3>
