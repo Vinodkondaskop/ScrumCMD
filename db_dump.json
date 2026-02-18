@@ -1,0 +1,250 @@
+{
+  "employees": [
+    {
+      "id": "c1bdcb65-",
+      "name": "Rahul A",
+      "role": "VP Eng",
+      "email": "testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.39899135697841437"
+    },
+    {
+      "id": "303a5afd-",
+      "name": "Sumit K",
+      "role": "Backend",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.29022238484490437"
+    },
+    {
+      "id": "900a4f12-",
+      "name": "RK",
+      "role": "VP Eng",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.6478583505046894"
+    },
+    {
+      "id": "d19e744f-",
+      "name": "Shasvat Sheth",
+      "role": "Frontend ",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.8599616879791022"
+    },
+    {
+      "id": "ccd80edd-",
+      "name": "Vaibhav",
+      "role": "Backend",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.46582069843763796"
+    },
+    {
+      "id": "74df6729-",
+      "name": "Riya soni",
+      "role": "Backend",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.3909764024478858"
+    },
+    {
+      "id": "77f2836b-",
+      "name": "Rohit Soni",
+      "role": "Frontend",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.46452091235553417"
+    },
+    {
+      "id": "70ca20f5-",
+      "name": "Rishi Akbari",
+      "role": "Flutter Dev",
+      "email": "Testing@123",
+      "status": "Active",
+      "joinedDate": "2026-02-18",
+      "avatarUrl": "https://picsum.photos/200?random=0.44728757864409674"
+    }
+  ],
+  "projects": [
+    {
+      "id": "75e02359-",
+      "name": "ClaimIQ",
+      "startDate": "2026-02-18",
+      "deadline": "2026-02-20",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": "AI powered fraud detection platform"
+    },
+    {
+      "id": "ad62e875-",
+      "name": "HIMS v2",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    },
+    {
+      "id": "b550ef6a-",
+      "name": "GMC",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    },
+    {
+      "id": "9663d98e-",
+      "name": "Facility App",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    },
+    {
+      "id": "d342295d-",
+      "name": "SDK",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    },
+    {
+      "id": "6fbfe05c-",
+      "name": "Manorama",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    },
+    {
+      "id": "fcd32337-",
+      "name": "Manorama",
+      "startDate": "2026-02-18",
+      "deadline": "2026-03-18",
+      "priority": "Medium",
+      "ownerId": "e1",
+      "status": "Active",
+      "description": ""
+    }
+  ],
+  "tasks": [
+    {
+      "id": "35cccca8-",
+      "projectId": "75e02359-",
+      "assignedToId": "c1bdcb65-",
+      "title": "Annotation",
+      "description": "Added via Task Manager",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-18",
+      "createdAt": "2026-02-18T07:06:13.524Z",
+      "updatedAt": "2026-02-18T07:22:40.178Z"
+    },
+    {
+      "id": "c3d081d1-",
+      "projectId": "ad62e875-",
+      "assignedToId": "900a4f12-",
+      "title": "HIMS v2 issues and sub domain for onboarding and hospital access",
+      "description": "Added via Task Manager",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T07:07:42.270Z",
+      "updatedAt": "2026-02-18T07:22:36.861Z"
+    },
+    {
+      "id": "246bd9eb-",
+      "projectId": "ad62e875-",
+      "assignedToId": "303a5afd-",
+      "title": "HIMS v2 issues and sub domain for onboarding and hospital access",
+      "description": "Added via Task Manager",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T07:07:54.923Z",
+      "updatedAt": "2026-02-18T07:22:33.433Z"
+    },
+    {
+      "id": "23f44aa4-",
+      "projectId": "ad62e875-",
+      "assignedToId": "d19e744f-",
+      "title": "Master Changes Active Deactive hospital",
+      "description": "Added via Task Manager",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T07:08:26.911Z",
+      "updatedAt": "2026-02-18T07:22:30.710Z"
+    },
+    {
+      "id": "a1068fb5-",
+      "projectId": "9663d98e-",
+      "assignedToId": "70ca20f5-",
+      "title": "Patient Registration App",
+      "description": "Added via Task Manager",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T07:09:44.093Z",
+      "updatedAt": "2026-02-18T07:22:26.470Z"
+    },
+    {
+      "id": "9f71fe49-",
+      "projectId": "d342295d-",
+      "assignedToId": "74df6729-",
+      "title": "M2, M3 Backend",
+      "description": "Assigned via Task Assignment",
+      "status": "In Progress",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T07:24:15.877Z",
+      "updatedAt": "2026-02-18T11:02:08.183Z"
+    },
+    {
+      "id": "d383ab0c-",
+      "projectId": "fcd32337-",
+      "assignedToId": "900a4f12-",
+      "title": "Manorama STT issue RK will check and if it is from our end will resolve it ",
+      "description": "",
+      "status": "Todo",
+      "priority": "Medium",
+      "dueDate": "2026-02-20",
+      "createdAt": "2026-02-18T08:35:15.495Z",
+      "updatedAt": "2026-02-18T08:39:20.083Z"
+    }
+  ],
+  "daily_updates": [
+    {
+      "id": "6a8baa64-",
+      "employeeId": "c1bdcb65-",
+      "projectId": "75e02359-",
+      "taskTitle": "working on the annotation",
+      "date": "2026-02-18",
+      "yesterday": "was working on this feature only ",
+      "today": "will be working on this feature where we provide option of pdf annotation and scan( ( ClaimIQ > Hospital side > Template >Pdf annotation and scan wala  ( hospital ))",
+      "blockers": null,
+      "progress": 50,
+      "createdAt": "2026-02-18T06:56:02.316Z"
+    }
+  ],
+  "blockers": [],
+  "task_notes": []
+}
