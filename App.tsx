@@ -14,20 +14,22 @@ const App: React.FC = () => {
   return (
     <DataProvider>
       <Router>
-        <div className="flex min-h-screen bg-slate-50">
+        <div className="flex h-screen overflow-hidden bg-background-light font-display">
           <Sidebar />
-          <main className="flex-1 ml-64 p-8">
-            <div className="max-w-7xl mx-auto">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/daily-update" element={<DailyUpdateForm />} />
-                <Route path="/employees" element={<Employees />} />
-                <Route path="/employees/:id" element={<EmployeeProfile />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+          <main className="flex-1 ml-64 flex flex-col min-w-0 bg-white overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-8">
+              <div className="max-w-7xl mx-auto">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/daily-update" element={<DailyUpdateForm />} />
+                  <Route path="/employees" element={<Employees />} />
+                  <Route path="/employees/:id" element={<EmployeeProfile />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </div>
             </div>
           </main>
         </div>

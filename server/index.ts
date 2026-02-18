@@ -84,6 +84,14 @@ app.patch('/api/tasks/:id/status', (req, res) => {
     res.json({ success: true });
 });
 
+app.put('/api/tasks/:id', (req, res) => {
+    const { title, description, assignedToId, projectId, priority, dueDate, status } = req.body;
+    const now = new Date().toISOString();
+    db.prepare('UPDATE tasks SET title = ?, description = ?, assignedToId = ?, projectId = ?, priority = ?, dueDate = ?, status = ?, updatedAt = ? WHERE id = ?')
+        .run(title, description || '', assignedToId, projectId, priority, dueDate, status, now, req.params.id);
+    res.json({ id: req.params.id, title, description, assignedToId, projectId, priority, dueDate, status, updatedAt: now });
+});
+
 // ─── DAILY UPDATES ───────────────────────────────────────────
 app.get('/api/daily-updates', (_req, res) => {
     const rows = db.prepare('SELECT * FROM daily_updates ORDER BY createdAt DESC').all();

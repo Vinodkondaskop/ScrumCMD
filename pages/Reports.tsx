@@ -8,14 +8,12 @@ const Reports: React.FC = () => {
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Tasks per employee
   const tasksByEmployee = employees
     .filter(emp => emp.status === 'Active')
     .map(emp => ({
-      name: emp.name,
-      total: tasks.filter(t => t.assignedToId === emp.id).length,
-      done: tasks.filter(t => t.assignedToId === emp.id && t.status === 'Done').length,
-      open: tasks.filter(t => t.assignedToId === emp.id && t.status !== 'Done').length,
+      name: emp.name.split(' ')[0],
+      Done: tasks.filter(t => t.assignedToId === emp.id && t.status === 'Done').length,
+      Open: tasks.filter(t => t.assignedToId === emp.id && t.status !== 'Done').length,
     }));
 
   const taskStatusData = [
@@ -25,95 +23,76 @@ const Reports: React.FC = () => {
     { name: 'Todo', value: tasks.filter(t => t.status === 'Todo').length },
   ];
 
-  const COLORS = ['#10b981', '#3b82f6', '#ef4444', '#94a3b8'];
+  const COLORS = ['#36b37e', '#0052cc', '#ff5630', '#97a0af'];
 
   const generateAIReport = async () => {
     setLoading(true);
-    const report = await analyzeTeamPerformance({
-      employees,
-      projects,
-      tasks,
-      recentUpdates: [],
-      blockers
-    });
+    const report = await analyzeTeamPerformance({ employees, projects, tasks, recentUpdates: [], blockers });
     setAiReport(report);
     setLoading(false);
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800">Analytics & Insights</h1>
-        <button
-          onClick={generateAIReport}
-          disabled={loading}
-          className={`px-6 py-3 rounded-lg font-bold text-white shadow-lg flex items-center gap-2 ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'}`}
-        >
-          {loading ? (
-            <>
-              <span className="animate-spin">🔄</span> Analyzing...
-            </>
-          ) : (
-            <>
-              <span>✨</span> Ask AI Scrum Master
-            </>
-          )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-atlassian-text">Reports & AI Insights</h2>
+        <button onClick={generateAIReport} disabled={loading}
+          className={`font-semibold py-2 px-4 rounded text-sm flex items-center gap-2 transition-colors ${loading ? 'bg-atlassian-neutral text-atlassian-subtle cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'}`}>
+          <span className="material-symbols-outlined !text-sm" style={{ fontSize: '16px' }}>{loading ? 'hourglass_empty' : 'auto_awesome'}</span>
+          {loading ? 'Analyzing...' : 'Ask AI Scrum Master'}
         </button>
       </div>
 
+      {/* AI Report */}
       {aiReport && (
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 shadow-sm animate-fade-in">
-          <h2 className="text-lg font-bold text-indigo-900 mb-4 border-b border-indigo-200 pb-2">AI Performance Report</h2>
-          <div className="prose prose-indigo max-w-none text-slate-800 text-sm whitespace-pre-wrap">
-            {aiReport}
+        <div className="bg-white border border-atlassian-border rounded">
+          <div className="px-5 py-3 border-b border-atlassian-border flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary" style={{ fontSize: '18px' }}>auto_awesome</span>
+            <h3 className="font-semibold text-sm text-atlassian-text">AI Performance Report</h3>
           </div>
+          <div className="p-5 text-sm text-atlassian-text whitespace-pre-wrap leading-relaxed">{aiReport}</div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        {/* Chart 1: Tasks per Employee */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-700 mb-6">Tasks per Employee</h3>
-          <div className="h-64">
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white border border-atlassian-border rounded">
+          <div className="px-5 py-3 border-b border-atlassian-border">
+            <h3 className="font-semibold text-sm">Tasks per Employee</h3>
+          </div>
+          <div className="p-5 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={tasksByEmployee}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="done" fill="#10b981" name="Done" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="open" fill="#3b82f6" name="Open" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe1e6" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b778c' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#6b778c' }} />
+                <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #dfe1e6', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Bar dataKey="Done" fill="#36b37e" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Open" fill="#0052cc" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Chart 2: Task Distribution */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-700 mb-6">Task Status Distribution</h3>
-          <div className="h-64 flex justify-center">
+        <div className="bg-white border border-atlassian-border rounded">
+          <div className="px-5 py-3 border-b border-atlassian-border">
+            <h3 className="font-semibold text-sm">Task Status Distribution</h3>
+          </div>
+          <div className="p-5 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={taskStatusData}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {taskStatusData.map((entry, index) => (
+                <Pie data={taskStatusData} innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value">
+                  {taskStatusData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #dfe1e6', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
     </div>
   );

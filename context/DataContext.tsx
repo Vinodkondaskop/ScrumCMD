@@ -10,6 +10,7 @@ interface DataContextType {
   addProject: (proj: Omit<Project, 'id'>) => void;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
+  updateTask: (taskId: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
   resolveBlocker: (blockerId: string) => void;
   updateEmployeeStatus: (id: string, status: EmployeeStatus) => void;
   deleteEmployee: (id: string) => void;
@@ -91,6 +92,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
   };
 
+  const updateTask = async (taskId: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const merged = { ...task, ...updates };
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(merged),
+    });
+    const updated = await res.json();
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updated } : t));
+  };
+
 
 
   const resolveBlocker = async (blockerId: string) => {
@@ -156,6 +170,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addProject,
       addTask,
       updateTaskStatus,
+      updateTask,
       resolveBlocker,
       updateEmployeeStatus,
       deleteEmployee,
