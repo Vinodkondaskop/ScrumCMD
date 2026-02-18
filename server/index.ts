@@ -169,7 +169,7 @@ app.patch('/api/blockers/:id/resolve', (req, res) => {
 // ─── SERVE FRONTEND (Production) ─────────────────────────────
 const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
-app.get('(.*)', (_req, res) => {
+app.use((_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
