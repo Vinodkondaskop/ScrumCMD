@@ -1,0 +1,77 @@
+import Database from 'better-sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DB_PATH = path.join(__dirname, '..', 'scrumcmd.db');
+
+const db = new Database(DB_PATH);
+
+// Enable WAL mode for better concurrent read performance
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
+// Create tables
+db.exec(`
+  CREATE TABLE IF NOT EXISTS employees (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    email TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Active',
+    joinedDate TEXT NOT NULL,
+    avatarUrl TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS projects (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    startDate TEXT NOT NULL,
+    deadline TEXT NOT NULL,
+    priority TEXT NOT NULL,
+    ownerId TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Active',
+    description TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    projectId TEXT NOT NULL,
+    assignedToId TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Todo',
+    priority TEXT NOT NULL,
+    dueDate TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS daily_updates (
+    id TEXT PRIMARY KEY,
+    employeeId TEXT NOT NULL,
+    projectId TEXT NOT NULL,
+    taskTitle TEXT NOT NULL,
+    date TEXT NOT NULL,
+    yesterday TEXT NOT NULL,
+    today TEXT NOT NULL,
+    blockers TEXT,
+    progress INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS blockers (
+    id TEXT PRIMARY KEY,
+    employeeId TEXT NOT NULL,
+    projectId TEXT NOT NULL,
+    taskTitle TEXT NOT NULL,
+    description TEXT NOT NULL,
+    reportedDate TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Open',
+    resolvedDate TEXT
+  );
+`);
+
+console.log('📦 Database ready');
+
+export default db;
