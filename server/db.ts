@@ -70,6 +70,13 @@ db.exec(`
     status TEXT NOT NULL DEFAULT 'Open',
     resolvedDate TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS task_notes (
+    id TEXT PRIMARY KEY,
+    taskId TEXT NOT NULL,
+    content TEXT NOT NULL,
+    createdAt TEXT NOT NULL
+  );
 `);
 
 console.log('📦 Database ready');

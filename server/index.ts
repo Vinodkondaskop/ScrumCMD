@@ -92,6 +92,26 @@ app.put('/api/tasks/:id', (req, res) => {
     res.json({ id: req.params.id, title, description, assignedToId, projectId, priority, dueDate, status, updatedAt: now });
 });
 
+app.delete('/api/tasks/:id', (req, res) => {
+    db.prepare('DELETE FROM task_notes WHERE taskId = ?').run(req.params.id);
+    db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id);
+    res.json({ success: true });
+});
+
+// ─── TASK NOTES ──────────────────────────────────────────────
+app.get('/api/tasks/:id/notes', (req, res) => {
+    const rows = db.prepare('SELECT * FROM task_notes WHERE taskId = ? ORDER BY createdAt DESC').all(req.params.id);
+    res.json(rows);
+});
+
+app.post('/api/tasks/:id/notes', (req, res) => {
+    const { content } = req.body;
+    const id = uuidv4().slice(0, 9);
+    const now = new Date().toISOString();
+    db.prepare('INSERT INTO task_notes (id, taskId, content, createdAt) VALUES (?, ?, ?, ?)').run(id, req.params.id, content, now);
+    res.status(201).json({ id, taskId: req.params.id, content, createdAt: now });
+});
+
 // ─── DAILY UPDATES ───────────────────────────────────────────
 app.get('/api/daily-updates', (_req, res) => {
     const rows = db.prepare('SELECT * FROM daily_updates ORDER BY createdAt DESC').all();

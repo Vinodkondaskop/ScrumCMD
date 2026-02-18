@@ -5,12 +5,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ScrumCmd — Agile Management</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -20,7 +21,12 @@
             "atlassian-neutral": "#f4f5f7",
             "atlassian-border": "#dfe1e6",
             "atlassian-text": "#172b4d",
-            "atlassian-subtle": "#6b778c"
+            "atlassian-subtle": "#6b778c",
+            "dark-bg": "#1d2125",
+            "dark-surface": "#22272b",
+            "dark-border": "#3a3f44",
+            "dark-text": "#b6c2cf",
+            "dark-text-bright": "#dee4ea"
           },
           fontFamily: {
             "display": ["Inter", "sans-serif"]
@@ -51,6 +57,17 @@
       color: #0052cc;
     }
 
+    /* Dark mode */
+    html.dark body {
+      color: #b6c2cf;
+      background: #1d2125;
+    }
+
+    html.dark .nav-item-active {
+      background-color: rgba(0, 82, 204, 0.2);
+      color: #4c9aff;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
@@ -69,10 +86,45 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #6b778c;
     }
+
+    html.dark ::-webkit-scrollbar-track {
+      background: #22272b;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb {
+      background: #3a3f44;
+    }
+
+    /* Toast animation */
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Kanban drag */
+    .kanban-card {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .kanban-card:active {
+      cursor: grabbing;
+    }
+
+    .kanban-col-hover {
+      background-color: rgba(0, 82, 204, 0.06);
+    }
   </style>
 </head>
 
-<body class="bg-background-light font-display antialiased">
+<body class="bg-background-light dark:bg-dark-bg font-display antialiased">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

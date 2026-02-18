@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Employee, Project, Task, Blocker, EmployeeStatus, ProjectStatus, TaskStatus, TaskPriority } from '../types';
+import { useToast } from './ToastContext';
 
 interface DataContextType {
   employees: Employee[];
@@ -11,6 +12,7 @@ interface DataContextType {
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
   updateTask: (taskId: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
+  deleteTask: (id: string) => void;
   resolveBlocker: (blockerId: string) => void;
   updateEmployeeStatus: (id: string, status: EmployeeStatus) => void;
   deleteEmployee: (id: string) => void;
@@ -25,20 +27,17 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 const API_BASE = '/api';
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { showToast } = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-
   const [blockers, setBlockers] = useState<Blocker[]>([]);
 
-  // Fetch all data from API on mount
   const fetchAll = useCallback(async () => {
     try {
       const [empRes, projRes, taskRes, blockerRes] = await Promise.all([
-        fetch(`${API_BASE}/employees`),
-        fetch(`${API_BASE}/projects`),
-        fetch(`${API_BASE}/tasks`),
-        fetch(`${API_BASE}/blockers`),
+        fetch(`${API_BASE}/employees`), fetch(`${API_BASE}/projects`),
+        fetch(`${API_BASE}/tasks`), fetch(`${API_BASE}/blockers`),
       ]);
       setEmployees(await empRes.json());
       setProjects(await projRes.json());
@@ -46,92 +45,72 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setBlockers(await blockerRes.json());
     } catch (e) {
       console.error('Failed to fetch data from API:', e);
+      showToast('Failed to load data', 'error');
     }
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const addEmployee = async (emp: Omit<Employee, 'id'>) => {
-    const res = await fetch(`${API_BASE}/employees`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(emp),
-    });
+    const res = await fetch(`${API_BASE}/employees`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(emp) });
     const newEmp = await res.json();
     setEmployees(prev => [...prev, newEmp]);
+    showToast(`Employee "${newEmp.name}" added`);
   };
 
   const addProject = async (proj: Omit<Project, 'id'>) => {
-    const res = await fetch(`${API_BASE}/projects`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(proj),
-    });
+    const res = await fetch(`${API_BASE}/projects`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(proj) });
     const newProj = await res.json();
     setProjects(prev => [...prev, newProj]);
+    showToast(`Project "${newProj.name}" created`);
   };
 
   const addTask = async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const res = await fetch(`${API_BASE}/tasks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(task),
-    });
+    const res = await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(task) });
     const newTask = await res.json();
     setTasks(prev => [...prev, newTask]);
+    showToast(`Task "${newTask.title}" assigned`);
   };
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
-    await fetch(`${API_BASE}/tasks/${taskId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
+    await fetch(`${API_BASE}/tasks/${taskId}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
+    showToast(`Task status → ${status}`);
   };
 
   const updateTask = async (taskId: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     const merged = { ...task, ...updates };
-    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(merged),
-    });
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(merged) });
     const updated = await res.json();
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updated } : t));
+    showToast('Task updated');
   };
 
-
+  const deleteTask = async (id: string) => {
+    await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
+    setTasks(prev => prev.filter(t => t.id !== id));
+    showToast('Task deleted', 'info');
+  };
 
   const resolveBlocker = async (blockerId: string) => {
-    await fetch(`${API_BASE}/blockers/${blockerId}/resolve`, {
-      method: 'PATCH',
-    });
+    await fetch(`${API_BASE}/blockers/${blockerId}/resolve`, { method: 'PATCH' });
     setBlockers(prev => prev.map(b => b.id === blockerId ? { ...b, status: 'Resolved', resolvedDate: new Date().toISOString() } : b));
+    showToast('Blocker resolved');
   };
 
   const toggleEmployeeStatus = async (id: string) => {
     const emp = employees.find(e => e.id === id);
     if (!emp) return;
     const newStatus = emp.status === EmployeeStatus.ACTIVE ? EmployeeStatus.INACTIVE : EmployeeStatus.ACTIVE;
-    await fetch(`${API_BASE}/employees/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
-    });
+    await fetch(`${API_BASE}/employees/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, status: newStatus } : e));
+    showToast(`${emp.name} → ${newStatus}`);
   };
 
   const updateEmployeeStatus = async (id: string, status: EmployeeStatus) => {
-    await fetch(`${API_BASE}/employees/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
+    await fetch(`${API_BASE}/employees/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
     setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, status } : emp));
   };
 
@@ -139,45 +118,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await fetch(`${API_BASE}/employees/${id}`, { method: 'DELETE' });
     setEmployees(prev => prev.filter(emp => emp.id !== id));
     setTasks(prev => prev.map(task => task.assignedToId === id ? { ...task, assignedToId: '' } : task));
+    showToast('Employee removed', 'info');
   };
 
   const updateProjectStatus = async (id: string, status: ProjectStatus) => {
-    await fetch(`${API_BASE}/projects/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
+    await fetch(`${API_BASE}/projects/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
     setProjects(prev => prev.map(proj => proj.id === id ? { ...proj, status } : proj));
+    showToast(`Project status → ${status}`);
   };
 
   const deleteProject = async (id: string) => {
     await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
     setProjects(prev => prev.filter(proj => proj.id !== id));
     setTasks(prev => prev.filter(task => task.projectId !== id));
+    showToast('Project deleted', 'info');
   };
 
-  const refreshData = () => {
-    fetchAll();
-  };
+  const refreshData = () => { fetchAll(); };
 
   return (
     <DataContext.Provider value={{
-      employees,
-      projects,
-      tasks,
-      blockers,
-      addEmployee,
-      addProject,
-      addTask,
-      updateTaskStatus,
-      updateTask,
-      resolveBlocker,
-      updateEmployeeStatus,
-      deleteEmployee,
-      toggleEmployeeStatus,
-      updateProjectStatus,
-      deleteProject,
-      refreshData
+      employees, projects, tasks, blockers,
+      addEmployee, addProject, addTask, updateTaskStatus, updateTask, deleteTask,
+      resolveBlocker, updateEmployeeStatus, deleteEmployee, toggleEmployeeStatus,
+      updateProjectStatus, deleteProject, refreshData
     }}>
       {children}
     </DataContext.Provider>
@@ -186,8 +150,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useData = () => {
   const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('useData must be used within a DataProvider');
-  }
+  if (!context) throw new Error('useData must be used within a DataProvider');
   return context;
 };
