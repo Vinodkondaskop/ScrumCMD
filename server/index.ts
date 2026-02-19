@@ -166,6 +166,33 @@ app.patch('/api/blockers/:id/resolve', (req, res) => {
     res.json({ success: true });
 });
 
+// ─── MEETINGS (MOM) ──────────────────────────────────────────
+app.get('/api/meetings', (_req, res) => {
+    const rows = db.prepare('SELECT * FROM meetings ORDER BY date DESC, createdAt DESC').all();
+    res.json(rows);
+});
+
+app.post('/api/meetings', (req, res) => {
+    const { title, date, projectId, attendeeIds, agenda, notes, actionItems, decisions } = req.body;
+    const id = uuidv4().slice(0, 9);
+    const now = new Date().toISOString();
+    db.prepare('INSERT INTO meetings (id, title, date, projectId, attendeeIds, agenda, notes, actionItems, decisions, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .run(id, title, date, projectId || '', attendeeIds || '', agenda || '', notes || '', actionItems || '', decisions || '', now);
+    res.status(201).json({ id, title, date, projectId: projectId || '', attendeeIds: attendeeIds || '', agenda: agenda || '', notes: notes || '', actionItems: actionItems || '', decisions: decisions || '', createdAt: now });
+});
+
+app.put('/api/meetings/:id', (req, res) => {
+    const { title, date, projectId, attendeeIds, agenda, notes, actionItems, decisions } = req.body;
+    db.prepare('UPDATE meetings SET title = ?, date = ?, projectId = ?, attendeeIds = ?, agenda = ?, notes = ?, actionItems = ?, decisions = ? WHERE id = ?')
+        .run(title, date, projectId || '', attendeeIds || '', agenda || '', notes || '', actionItems || '', decisions || '', req.params.id);
+    res.json({ id: req.params.id, title, date, projectId, attendeeIds, agenda, notes, actionItems, decisions });
+});
+
+app.delete('/api/meetings/:id', (req, res) => {
+    db.prepare('DELETE FROM meetings WHERE id = ?').run(req.params.id);
+    res.json({ success: true });
+});
+
 // ─── SERVE FRONTEND (Production) ─────────────────────────────
 const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));

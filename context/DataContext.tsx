@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Employee, Project, Task, Blocker, EmployeeStatus, ProjectStatus, TaskStatus, TaskPriority } from '../types';
+import { Employee, Project, Task, Blocker, MeetingMinutes, EmployeeStatus, ProjectStatus, TaskStatus, TaskPriority } from '../types';
 import { useToast } from './ToastContext';
 
 interface DataContextType {
@@ -7,6 +7,7 @@ interface DataContextType {
   projects: Project[];
   tasks: Task[];
   blockers: Blocker[];
+  meetings: MeetingMinutes[];
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
   addProject: (proj: Omit<Project, 'id'>) => void;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -19,6 +20,9 @@ interface DataContextType {
   toggleEmployeeStatus: (id: string) => void;
   updateProjectStatus: (id: string, status: ProjectStatus) => void;
   deleteProject: (id: string) => void;
+  addMeeting: (m: Omit<MeetingMinutes, 'id' | 'createdAt'>) => void;
+  updateMeeting: (id: string, m: Partial<Omit<MeetingMinutes, 'id' | 'createdAt'>>) => void;
+  deleteMeeting: (id: string) => void;
   refreshData: () => void;
 }
 
@@ -32,17 +36,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [blockers, setBlockers] = useState<Blocker[]>([]);
+  const [meetings, setMeetings] = useState<MeetingMinutes[]>([]);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [empRes, projRes, taskRes, blockerRes] = await Promise.all([
+      const [empRes, projRes, taskRes, blockerRes, meetRes] = await Promise.all([
         fetch(`${API_BASE}/employees`), fetch(`${API_BASE}/projects`),
         fetch(`${API_BASE}/tasks`), fetch(`${API_BASE}/blockers`),
+        fetch(`${API_BASE}/meetings`),
       ]);
       setEmployees(await empRes.json());
       setProjects(await projRes.json());
       setTasks(await taskRes.json());
       setBlockers(await blockerRes.json());
+      setMeetings(await meetRes.json());
     } catch (e) {
       console.error('Failed to fetch data from API:', e);
       showToast('Failed to load data', 'error');
@@ -140,14 +147,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('Project deleted', 'info');
   };
 
+  const addMeeting = async (m: Omit<MeetingMinutes, 'id' | 'createdAt'>) => {
+    const res = await fetch(`${API_BASE}/meetings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(m) });
+    const newM = await res.json();
+    setMeetings(prev => [newM, ...prev]);
+    showToast(`Meeting "${newM.title}" saved`);
+  };
+
+  const updateMeeting = async (id: string, updates: Partial<Omit<MeetingMinutes, 'id' | 'createdAt'>>) => {
+    const existing = meetings.find(m => m.id === id);
+    if (!existing) return;
+    const merged = { ...existing, ...updates };
+    const res = await fetch(`${API_BASE}/meetings/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(merged) });
+    const updated = await res.json();
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, ...updated } : m));
+    showToast('Meeting updated');
+  };
+
+  const deleteMeeting = async (id: string) => {
+    await fetch(`${API_BASE}/meetings/${id}`, { method: 'DELETE' });
+    setMeetings(prev => prev.filter(m => m.id !== id));
+    showToast('Meeting deleted', 'info');
+  };
+
   const refreshData = () => { fetchAll(); };
 
   return (
     <DataContext.Provider value={{
-      employees, projects, tasks, blockers,
+      employees, projects, tasks, blockers, meetings,
       addEmployee, addProject, addTask, updateTaskStatus, updateTask, deleteTask,
       resolveBlocker, updateEmployeeStatus, deleteEmployee, toggleEmployeeStatus,
-      updateProjectStatus, deleteProject, refreshData
+      updateProjectStatus, deleteProject, addMeeting, updateMeeting, deleteMeeting, refreshData
     }}>
       {children}
     </DataContext.Provider>

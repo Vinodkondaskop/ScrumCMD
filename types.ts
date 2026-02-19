@@ -69,3 +69,16 @@ export interface Blocker {
   status: 'Open' | 'Resolved';
   resolvedDate?: string;
 }
+
+export interface MeetingMinutes {
+  id: string;
+  title: string;
+  date: string;
+  projectId: string;
+  attendeeIds: string;
+  agenda: string;
+  notes: string;
+  actionItems: string;
+  decisions: string;
+  createdAt: string;
+}

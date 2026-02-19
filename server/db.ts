@@ -84,6 +84,19 @@ db.exec(`
     content TEXT NOT NULL,
     createdAt TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS meetings (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    date TEXT NOT NULL,
+    projectId TEXT NOT NULL DEFAULT '',
+    attendeeIds TEXT NOT NULL DEFAULT '',
+    agenda TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    actionItems TEXT NOT NULL DEFAULT '',
+    decisions TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL
+  );
 `);
 
 // ─── SEED DATA (only on first run when DB is empty) ──────────
