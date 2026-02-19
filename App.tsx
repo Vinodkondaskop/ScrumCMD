@@ -10,6 +10,7 @@ import Tasks from './pages/Tasks';
 import MeetingMinutes from './pages/MeetingMinutes';
 import ProjectPlans from './pages/ProjectPlans';
 import Reports from './pages/Reports';
+import Celebration from './components/Celebration';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -102,6 +103,7 @@ const GlobalSearch: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const { dark } = useTheme();
+  const { showCelebration, setShowCelebration } = useData();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -135,6 +137,7 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         </main>
+        {showCelebration && <Celebration onComplete={() => setShowCelebration(false)} />}
       </div>
     </Router>
   );

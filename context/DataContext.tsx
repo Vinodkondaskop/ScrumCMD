@@ -9,6 +9,8 @@ interface DataContextType {
   blockers: Blocker[];
   meetings: MeetingMinutes[];
   projectPlans: ProjectPlan[];
+  showCelebration: boolean;
+  setShowCelebration: (show: boolean) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
   addProject: (proj: Omit<Project, 'id'>) => void;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -42,6 +44,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [blockers, setBlockers] = useState<Blocker[]>([]);
   const [meetings, setMeetings] = useState<MeetingMinutes[]>([]);
   const [projectPlans, setProjectPlans] = useState<ProjectPlan[]>([]);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -86,7 +89,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
-    await fetch(`${API_BASE}/tasks/${taskId}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+    // If moving to Done, trigger celebration!
+    if (status === TaskStatus.DONE) {
+      setShowCelebration(true);
+    }
+    const res = await fetch(`${API_BASE}/tasks/${taskId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     showToast(`Task status → ${status}`);
   };
@@ -204,6 +215,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider value={{
       employees, projects, tasks, blockers, meetings, projectPlans,
+      showCelebration, setShowCelebration,
       addEmployee, addProject, addTask, updateTaskStatus, updateTask, deleteTask,
       resolveBlocker, updateEmployeeStatus, deleteEmployee, toggleEmployeeStatus,
       updateProjectStatus, deleteProject, addMeeting, updateMeeting, deleteMeeting,
