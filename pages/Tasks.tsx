@@ -18,6 +18,10 @@ const Tasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 10;
+
   // Form fields
   const [title, setTitle] = useState('');
   const [projectId, setProjectId] = useState('');
@@ -111,6 +115,17 @@ const Tasks: React.FC = () => {
     if (employeeFilter !== 'all') result = result.filter(t => t.assignedToId === employeeFilter);
     return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [tasks, dateFilter, statusFilter, employeeFilter]);
+
+  // Reset pagination on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, statusFilter, employeeFilter]);
+
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+  const paginatedTasks = useMemo(() => {
+    const startIndex = (currentPage - 1) * tasksPerPage;
+    return filteredTasks.slice(startIndex, startIndex + tasksPerPage);
+  }, [filteredTasks, currentPage]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -212,7 +227,7 @@ const Tasks: React.FC = () => {
               </tr>
             </thead>
             <tbody className={`divide-y ${dc ? 'divide-dark-border' : 'divide-atlassian-border'}`}>
-              {filteredTasks.map(task => {
+              {paginatedTasks.map(task => {
                 const isOverdue = task.dueDate < todayStr && task.status !== TaskStatus.DONE;
                 const emp = employees.find(e => e.id === task.assignedToId);
                 const initials = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
@@ -265,7 +280,7 @@ const Tasks: React.FC = () => {
       {view === 'board' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kanbanCols.map(col => {
-            const colTasks = filteredTasks.filter(t => t.status === col.key);
+            const colTasks = paginatedTasks.filter(t => t.status === col.key);
             return (
               <div key={col.key}
                 onDragOver={e => handleDragOver(e, col.key)}
@@ -314,6 +329,69 @@ const Tasks: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className={`flex items-center justify-between px-4 py-3 border-t ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright hover:bg-dark-surface disabled:opacity-30' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50'}`}
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`relative ml-3 inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright hover:bg-dark-surface disabled:opacity-30' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50'}`}
+            >
+              Next
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className={`text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>
+                Showing <span className="font-medium">{(currentPage - 1) * tasksPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * tasksPerPage, filteredTasks.length)}</span> of{' '}
+                <span className="font-medium">{filteredTasks.length}</span> results
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ${dc ? 'bg-dark-bg ring-dark-border hover:bg-dark-surface' : ''}`}
+                >
+                  <span className="sr-only">Previous</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_left</span>
+                </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    aria-current={currentPage === i + 1 ? 'page' : undefined}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${currentPage === i + 1
+                        ? 'z-10 bg-primary text-white focus-visible:outline-primary'
+                        : `text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 ${dc ? 'bg-dark-bg text-dark-text-bright ring-dark-border hover:bg-dark-surface' : ''}`
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 ${dc ? 'bg-dark-bg ring-dark-border hover:bg-dark-surface' : ''}`}
+                >
+                  <span className="sr-only">Next</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_right</span>
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       )}
 
