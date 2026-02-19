@@ -193,6 +193,33 @@ app.delete('/api/meetings/:id', (req, res) => {
     res.json({ success: true });
 });
 
+// ─── PROJECT PLANS ───────────────────────────────────────────
+app.get('/api/project-plans', (_req, res) => {
+    const rows = db.prepare('SELECT * FROM project_plans ORDER BY createdAt DESC').all();
+    res.json(rows);
+});
+
+app.post('/api/project-plans', (req, res) => {
+    const { title, projectId, items } = req.body;
+    const id = uuidv4().slice(0, 9);
+    const now = new Date().toISOString();
+    db.prepare('INSERT INTO project_plans (id, title, projectId, items, createdAt) VALUES (?, ?, ?, ?, ?)')
+        .run(id, title, projectId || '', items || '[]', now);
+    res.status(201).json({ id, title, projectId: projectId || '', items: items || '[]', createdAt: now });
+});
+
+app.put('/api/project-plans/:id', (req, res) => {
+    const { title, projectId, items } = req.body;
+    db.prepare('UPDATE project_plans SET title = ?, projectId = ?, items = ? WHERE id = ?')
+        .run(title, projectId || '', items || '[]', req.params.id);
+    res.json({ id: req.params.id, title, projectId, items });
+});
+
+app.delete('/api/project-plans/:id', (req, res) => {
+    db.prepare('DELETE FROM project_plans WHERE id = ?').run(req.params.id);
+    res.json({ success: true });
+});
+
 // ─── SERVE FRONTEND (Production) ─────────────────────────────
 const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));

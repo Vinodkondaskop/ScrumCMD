@@ -16,6 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: 'Projects', path: '/projects', icon: 'view_kanban' },
     { name: 'Tasks', path: '/tasks', icon: 'check_box' },
     { name: 'Meeting Docs', path: '/meetings', icon: 'description' },
+    { name: 'Project Plans', path: '/project-plans', icon: 'timeline' },
     { name: 'Reports & AI', path: '/reports', icon: 'insights' },
   ];
 

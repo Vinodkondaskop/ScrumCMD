@@ -97,6 +97,14 @@ db.exec(`
     decisions TEXT NOT NULL DEFAULT '',
     createdAt TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS project_plans (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    projectId TEXT NOT NULL DEFAULT '',
+    items TEXT NOT NULL DEFAULT '[]',
+    createdAt TEXT NOT NULL
+  );
 `);
 
 // ─── SEED DATA (only on first run when DB is empty) ──────────

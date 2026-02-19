@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Employee, Project, Task, Blocker, MeetingMinutes, EmployeeStatus, ProjectStatus, TaskStatus, TaskPriority } from '../types';
+import { Employee, Project, Task, Blocker, MeetingMinutes, ProjectPlan, EmployeeStatus, ProjectStatus, TaskStatus, TaskPriority } from '../types';
 import { useToast } from './ToastContext';
 
 interface DataContextType {
@@ -8,6 +8,7 @@ interface DataContextType {
   tasks: Task[];
   blockers: Blocker[];
   meetings: MeetingMinutes[];
+  projectPlans: ProjectPlan[];
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
   addProject: (proj: Omit<Project, 'id'>) => void;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -23,6 +24,9 @@ interface DataContextType {
   addMeeting: (m: Omit<MeetingMinutes, 'id' | 'createdAt'>) => void;
   updateMeeting: (id: string, m: Partial<Omit<MeetingMinutes, 'id' | 'createdAt'>>) => void;
   deleteMeeting: (id: string) => void;
+  addProjectPlan: (p: Omit<ProjectPlan, 'id' | 'createdAt'>) => void;
+  updateProjectPlan: (id: string, p: Partial<Omit<ProjectPlan, 'id' | 'createdAt'>>) => void;
+  deleteProjectPlan: (id: string) => void;
   refreshData: () => void;
 }
 
@@ -37,19 +41,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [tasks, setTasks] = useState<Task[]>([]);
   const [blockers, setBlockers] = useState<Blocker[]>([]);
   const [meetings, setMeetings] = useState<MeetingMinutes[]>([]);
+  const [projectPlans, setProjectPlans] = useState<ProjectPlan[]>([]);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [empRes, projRes, taskRes, blockerRes, meetRes] = await Promise.all([
+      const [empRes, projRes, taskRes, blockerRes, meetRes, planRes] = await Promise.all([
         fetch(`${API_BASE}/employees`), fetch(`${API_BASE}/projects`),
         fetch(`${API_BASE}/tasks`), fetch(`${API_BASE}/blockers`),
-        fetch(`${API_BASE}/meetings`),
+        fetch(`${API_BASE}/meetings`), fetch(`${API_BASE}/project-plans`),
       ]);
       setEmployees(await empRes.json());
       setProjects(await projRes.json());
       setTasks(await taskRes.json());
       setBlockers(await blockerRes.json());
       setMeetings(await meetRes.json());
+      setProjectPlans(await planRes.json());
     } catch (e) {
       console.error('Failed to fetch data from API:', e);
       showToast('Failed to load data', 'error');
@@ -170,14 +176,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('Meeting deleted', 'info');
   };
 
+  const addProjectPlan = async (p: Omit<ProjectPlan, 'id' | 'createdAt'>) => {
+    const res = await fetch(`${API_BASE}/project-plans`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+    const newP = await res.json();
+    setProjectPlans(prev => [newP, ...prev]);
+    showToast(`Plan "${newP.title}" created`);
+  };
+
+  const updateProjectPlan = async (id: string, updates: Partial<Omit<ProjectPlan, 'id' | 'createdAt'>>) => {
+    const existing = projectPlans.find(p => p.id === id);
+    if (!existing) return;
+    const merged = { ...existing, ...updates };
+    const res = await fetch(`${API_BASE}/project-plans/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(merged) });
+    const updated = await res.json();
+    setProjectPlans(prev => prev.map(p => p.id === id ? { ...p, ...updated } : p));
+    showToast('Plan updated');
+  };
+
+  const deleteProjectPlan = async (id: string) => {
+    await fetch(`${API_BASE}/project-plans/${id}`, { method: 'DELETE' });
+    setProjectPlans(prev => prev.filter(p => p.id !== id));
+    showToast('Plan deleted', 'info');
+  };
+
   const refreshData = () => { fetchAll(); };
 
   return (
     <DataContext.Provider value={{
-      employees, projects, tasks, blockers, meetings,
+      employees, projects, tasks, blockers, meetings, projectPlans,
       addEmployee, addProject, addTask, updateTaskStatus, updateTask, deleteTask,
       resolveBlocker, updateEmployeeStatus, deleteEmployee, toggleEmployeeStatus,
-      updateProjectStatus, deleteProject, addMeeting, updateMeeting, deleteMeeting, refreshData
+      updateProjectStatus, deleteProject, addMeeting, updateMeeting, deleteMeeting,
+      addProjectPlan, updateProjectPlan, deleteProjectPlan, refreshData
     }}>
       {children}
     </DataContext.Provider>

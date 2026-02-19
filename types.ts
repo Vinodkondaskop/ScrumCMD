@@ -82,3 +82,22 @@ export interface MeetingMinutes {
   decisions: string;
   createdAt: string;
 }
+
+export interface PlanItem {
+  id: string;
+  phase: string;
+  task: string;
+  startDate: string;
+  endDate: string;
+  owner: string;
+  status: 'Not Started' | 'In Progress' | 'Done' | 'Blocked';
+  progress: number;
+}
+
+export interface ProjectPlan {
+  id: string;
+  title: string;
+  projectId: string;
+  items: string; // JSON array of PlanItem
+  createdAt: string;
+}

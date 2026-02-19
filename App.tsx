@@ -8,6 +8,7 @@ import EmployeeProfile from './pages/EmployeeProfile';
 import Projects from './pages/Projects';
 import Tasks from './pages/Tasks';
 import MeetingMinutes from './pages/MeetingMinutes';
+import ProjectPlans from './pages/ProjectPlans';
 import Reports from './pages/Reports';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastProvider } from './context/ToastContext';
@@ -127,6 +128,7 @@ const AppContent: React.FC = () => {
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/meetings" element={<MeetingMinutes />} />
+                <Route path="/project-plans" element={<ProjectPlans />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
