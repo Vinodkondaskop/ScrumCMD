@@ -26,8 +26,8 @@ const Reports: React.FC = () => {
     .filter(emp => emp.status === 'Active')
     .map(emp => ({
       name: emp.name.split(' ')[0],
-      Done: tasks.filter(t => t.assignedToId === emp.id && t.status === 'Done').length,
-      Open: tasks.filter(t => t.assignedToId === emp.id && t.status !== 'Done').length,
+      Done: tasks.filter(t => t.assignedToId.split(',').includes(emp.id) && t.status === 'Done').length,
+      Open: tasks.filter(t => t.assignedToId.split(',').includes(emp.id) && t.status !== 'Done').length,
     }));
 
   const taskStatusData = [

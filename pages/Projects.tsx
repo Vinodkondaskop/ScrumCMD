@@ -21,7 +21,7 @@ const Projects: React.FC = () => {
   };
 
   const getProgress = (projId: string) => {
-    const projTasks = tasks.filter(t => t.projectId === projId);
+    const projTasks = tasks.filter(t => t.projectId.split(',').includes(projId));
     if (projTasks.length === 0) return 0;
     return Math.round((projTasks.filter(t => t.status === 'Done').length / projTasks.length) * 100);
   };
@@ -51,7 +51,7 @@ const Projects: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map(project => {
             const progress = getProgress(project.id);
-            const taskCount = tasks.filter(t => t.projectId === project.id).length;
+            const taskCount = tasks.filter(t => t.projectId.split(',').includes(project.id)).length;
             return (
               <div key={project.id} className={`border rounded p-5 hover:shadow-sm transition-shadow relative group ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
                 <button onClick={() => { if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id); }}

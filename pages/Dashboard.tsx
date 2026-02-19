@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
                                         <p className={`text-sm font-medium ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>{task.title}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-xs text-red-600 font-bold">{getDaysOpen(task.dueDate)}d overdue</span>
-                                            <span className={`text-xs ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>• {employees.find(e => e.id === task.assignedToId)?.name}</span>
+                                            <span className={`text-xs ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>• {task.assignedToId.split(',').filter(Boolean).map(eid => employees.find(e => e.id === eid)?.name).filter(Boolean).join(', ')}</span>
                                         </div>
                                     </li>
                                 ))}
@@ -133,16 +133,17 @@ const Dashboard: React.FC = () => {
                                 </thead>
                                 <tbody className={`divide-y ${dc ? 'divide-dark-border' : 'divide-atlassian-border'}`}>
                                     {recentTasks.map(task => {
-                                        const emp = employees.find(e => e.id === task.assignedToId);
-                                        const initials = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+                                        const empIds = task.assignedToId ? task.assignedToId.split(',').filter(Boolean) : [];
+                                        const firstEmp = employees.find(e => e.id === empIds[0]);
+                                        const initials = firstEmp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
                                         return (
                                             <tr key={task.id} className={`transition-colors ${dc ? 'hover:bg-dark-bg' : 'hover:bg-atlassian-neutral'}`}>
                                                 <td className={`px-5 py-4 text-sm font-medium ${dc ? 'text-dark-text-bright' : ''}`}>{task.title}</td>
-                                                <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{projects.find(p => p.id === task.projectId)?.name}</td>
+                                                <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.projectId.split(',').filter(Boolean).map(pid => projects.find(p => p.id === pid)?.name).filter(Boolean).join(', ')}</td>
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-primary">{initials}</div>
-                                                        <span className={`text-sm ${dc ? 'text-dark-text-bright' : ''}`}>{emp?.name}</span>
+                                                        <span className={`text-sm ${dc ? 'text-dark-text-bright' : ''}`}>{empIds.map(eid => employees.find(e => e.id === eid)?.name).filter(Boolean).join(', ')}</span>
                                                     </div>
                                                 </td>
                                                 <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.dueDate}</td>

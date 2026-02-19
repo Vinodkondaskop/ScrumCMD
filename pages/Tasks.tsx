@@ -6,6 +6,105 @@ import { Task, TaskStatus, TaskPriority, EmployeeStatus, ProjectStatus } from '.
 
 interface TaskNote { id: string; taskId: string; content: string; createdAt: string; }
 
+// ─── Reusable Multi-Select Chip Dropdown ──────────────────────────────────
+const MultiSelect: React.FC<{
+  label: string; required?: boolean; placeholder: string;
+  options: { id: string; name: string }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+  dark: boolean;
+}> = ({ label, required, placeholder, options, selected, onChange, dark: dc }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const toggle = (id: string) => {
+    onChange(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id]);
+  };
+
+  const labelCls = `block text-xs font-bold uppercase tracking-wider mb-1.5 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`;
+
+  return (
+    <div ref={ref} className="relative">
+      <label className={labelCls}>{label} {required && <span className="text-red-500">*</span>}</label>
+      <div
+        onClick={() => setOpen(!open)}
+        className={`w-full border rounded text-sm px-3 py-2 cursor-pointer min-h-[38px] flex flex-wrap gap-1.5 items-center ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'}`}
+      >
+        {selected.length === 0 && <span className={`${dc ? 'text-dark-text' : 'text-atlassian-subtle'} text-sm`}>{placeholder}</span>}
+        {selected.map(id => {
+          const opt = options.find(o => o.id === id);
+          return opt ? (
+            <span key={id} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${dc ? 'bg-blue-900/40 text-blue-300 border border-blue-700/50' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+              {opt.name}
+              <button type="button" onClick={e => { e.stopPropagation(); toggle(id); }}
+                className="hover:text-red-500 transition-colors ml-0.5">×</button>
+            </span>
+          ) : null;
+        })}
+        <span className={`material-symbols-outlined ml-auto shrink-0 transition-transform ${open ? 'rotate-180' : ''} ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`} style={{ fontSize: '18px' }}>expand_more</span>
+      </div>
+      {open && (
+        <div className={`absolute z-50 top-full left-0 right-0 mt-1 border rounded shadow-lg max-h-48 overflow-y-auto ${dc ? 'bg-dark-surface border-dark-border' : 'bg-white border-atlassian-border'}`}>
+          {options.length === 0 && <p className={`px-3 py-2 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>No options</p>}
+          {options.map(opt => (
+            <button type="button" key={opt.id} onClick={() => toggle(opt.id)}
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${selected.includes(opt.id) ? (dc ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') : (dc ? 'hover:bg-dark-bg text-dark-text-bright' : 'hover:bg-atlassian-neutral text-atlassian-text')}`}>
+              <span className={`w-4 h-4 rounded border flex items-center justify-center text-xs ${selected.includes(opt.id) ? 'bg-primary border-primary text-white' : (dc ? 'border-dark-border' : 'border-atlassian-border')}`}>
+                {selected.includes(opt.id) && '✓'}
+              </span>
+              {opt.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Helper: parse comma-separated IDs ───────────────────────────────────
+const parseIds = (csv: string): string[] => csv ? csv.split(',').filter(Boolean) : [];
+
+// ─── Chip display for multiple names ──────────────────────────────────────
+const NameChips: React.FC<{ ids: string[]; items: { id: string; name: string }[]; dark: boolean }> = ({ ids, items, dark: dc }) => (
+  <div className="flex flex-wrap gap-1">
+    {ids.map(id => {
+      const item = items.find(i => i.id === id);
+      return item ? (
+        <span key={id} className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${dc ? 'bg-dark-bg text-dark-text-bright border border-dark-border' : 'bg-gray-100 text-atlassian-text border border-atlassian-border'}`}>
+          {item.name}
+        </span>
+      ) : null;
+    })}
+  </div>
+);
+
+// ─── Avatar stack for multiple employees ─────────────────────────────────
+const AvatarStack: React.FC<{ ids: string[]; employees: { id: string; name: string }[]; dark: boolean }> = ({ ids, employees, dark: dc }) => (
+  <div className="flex items-center">
+    <div className="flex -space-x-1.5">
+      {ids.slice(0, 3).map(id => {
+        const emp = employees.find(e => e.id === id);
+        const initials = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+        return (
+          <div key={id} className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-primary border-2 border-white dark:border-dark-surface" title={emp?.name}>
+            {initials}
+          </div>
+        );
+      })}
+      {ids.length > 3 && <span className={`text-[10px] font-bold ml-1 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>+{ids.length - 3}</span>}
+    </div>
+    <span className={`text-sm ml-2 ${dc ? 'text-dark-text-bright' : ''}`}>
+      {ids.map(id => employees.find(e => e.id === id)?.name).filter(Boolean).join(', ')}
+    </span>
+  </div>
+);
+
 const Tasks: React.FC = () => {
   const { tasks, projects, employees, addTask, updateTaskStatus, updateTask, deleteTask } = useData();
   const { dark } = useTheme();
@@ -22,10 +121,10 @@ const Tasks: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 10;
 
-  // Form fields
+  // Form fields — now arrays for multi-select
   const [title, setTitle] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [assigneeId, setAssigneeId] = useState('');
+  const [projectIds, setProjectIds] = useState<string[]>([]);
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [description, setDescription] = useState('');
@@ -39,11 +138,11 @@ const Tasks: React.FC = () => {
   const dragItem = useRef<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
 
-  const resetForm = () => { setTitle(''); setProjectId(''); setAssigneeId(''); setDueDate(''); setPriority(TaskPriority.MEDIUM); setDescription(''); setNotes([]); setNewNote(''); };
+  const resetForm = () => { setTitle(''); setProjectIds([]); setAssigneeIds([]); setDueDate(''); setPriority(TaskPriority.MEDIUM); setDescription(''); setNotes([]); setNewNote(''); };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    addTask({ projectId, assignedToId: assigneeId, title, description, status: TaskStatus.TODO, priority, dueDate });
+    addTask({ projectId: projectIds.join(','), assignedToId: assigneeIds.join(','), title, description, status: TaskStatus.TODO, priority, dueDate });
     setIsModalOpen(false); resetForm();
   };
 
@@ -74,8 +173,8 @@ const Tasks: React.FC = () => {
     setEditingTask(task);
     setTitle(task.title);
     setDescription(task.description || '');
-    setProjectId(task.projectId);
-    setAssigneeId(task.assignedToId);
+    setProjectIds(parseIds(task.projectId));
+    setAssigneeIds(parseIds(task.assignedToId));
     setDueDate(task.dueDate);
     setPriority(task.priority as TaskPriority);
     loadNotes(task.id);
@@ -84,7 +183,7 @@ const Tasks: React.FC = () => {
   const handleEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTask) return;
-    updateTask(editingTask.id, { title, description, projectId, assignedToId: assigneeId, dueDate, priority, status: editingTask.status });
+    updateTask(editingTask.id, { title, description, projectId: projectIds.join(','), assignedToId: assigneeIds.join(','), dueDate, priority, status: editingTask.status });
     setEditingTask(null); resetForm();
   };
 
@@ -92,12 +191,14 @@ const Tasks: React.FC = () => {
     if (confirm(`Delete task "${task.title}"?`)) deleteTask(task.id);
   };
 
-  // CSV Export
+  // CSV Export — show all names joined
   const exportCSV = () => {
     const headers = ['Title', 'Project', 'Assigned To', 'Due Date', 'Priority', 'Status'];
     const rows = filteredTasks.map(t => [
-      `"${t.title}"`, `"${projects.find(p => p.id === t.projectId)?.name || ''}"`,
-      `"${employees.find(e => e.id === t.assignedToId)?.name || ''}"`, t.dueDate, t.priority, t.status
+      `"${t.title}"`,
+      `"${parseIds(t.projectId).map(pid => projects.find(p => p.id === pid)?.name || '').join('; ')}"`,
+      `"${parseIds(t.assignedToId).map(eid => employees.find(e => e.id === eid)?.name || '').join('; ')}"`,
+      t.dueDate, t.priority, t.status
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -112,7 +213,7 @@ const Tasks: React.FC = () => {
     let result = [...tasks];
     if (dateFilter) result = result.filter(t => t.dueDate === dateFilter);
     if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
-    if (employeeFilter !== 'all') result = result.filter(t => t.assignedToId === employeeFilter);
+    if (employeeFilter !== 'all') result = result.filter(t => parseIds(t.assignedToId).includes(employeeFilter));
     return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [tasks, dateFilter, statusFilter, employeeFilter]);
 
@@ -221,7 +322,7 @@ const Tasks: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className={`border-b ${dc ? 'bg-dark-bg border-dark-border' : 'bg-atlassian-neutral border-atlassian-border'}`}>
-                {['Task', 'Project', 'Assigned To', 'Due Date', 'Priority', 'Status', 'Actions'].map(h => (
+                {['Task', 'Project(s)', 'Assigned To', 'Due Date', 'Priority', 'Status', 'Actions'].map(h => (
                   <th key={h} className={`px-5 py-3 text-xs font-bold uppercase tracking-wider ${dc ? 'text-dark-text' : 'text-atlassian-subtle'} ${h === 'Actions' ? 'text-center' : ''}`}>{h}</th>
                 ))}
               </tr>
@@ -229,20 +330,19 @@ const Tasks: React.FC = () => {
             <tbody className={`divide-y ${dc ? 'divide-dark-border' : 'divide-atlassian-border'}`}>
               {paginatedTasks.map(task => {
                 const isOverdue = task.dueDate < todayStr && task.status !== TaskStatus.DONE;
-                const emp = employees.find(e => e.id === task.assignedToId);
-                const initials = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+                const empIds = parseIds(task.assignedToId);
+                const projIds = parseIds(task.projectId);
                 return (
                   <tr key={task.id} className={`transition-colors ${dc ? 'hover:bg-dark-bg' : 'hover:bg-atlassian-neutral'} ${isOverdue ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}>
                     <td className={`px-5 py-4 text-sm font-medium ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>
                       {task.title}
                       {isOverdue && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-sm uppercase">Overdue</span>}
                     </td>
-                    <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{projects.find(p => p.id === task.projectId)?.name}</td>
+                    <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>
+                      <NameChips ids={projIds} items={projects} dark={dc} />
+                    </td>
                     <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-primary">{initials}</div>
-                        <span className={`text-sm ${dc ? 'text-dark-text-bright' : ''}`}>{emp?.name}</span>
-                      </div>
+                      <AvatarStack ids={empIds} employees={employees} dark={dc} />
                     </td>
                     <td className={`px-5 py-4 text-sm ${isOverdue ? 'text-red-600 font-bold' : dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.dueDate}</td>
                     <td className="px-5 py-4">
@@ -293,8 +393,9 @@ const Tasks: React.FC = () => {
                 </div>
                 <div className="px-2 pb-2 space-y-2">
                   {colTasks.map(task => {
-                    const emp = employees.find(e => e.id === task.assignedToId);
-                    const initials = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+                    const empIds = parseIds(task.assignedToId);
+                    const firstEmp = employees.find(e => e.id === empIds[0]);
+                    const initials = firstEmp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
                     const isOverdue = task.dueDate < todayStr && task.status !== TaskStatus.DONE;
                     return (
                       <div key={task.id} draggable
@@ -303,8 +404,18 @@ const Tasks: React.FC = () => {
                         <p className={`text-sm font-medium mb-2 ${dc ? 'text-dark-text-bright' : 'text-atlassian-text'}`}>{task.title}</p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[8px] font-bold text-primary">{initials}</div>
-                            <span className={`text-xs ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{emp?.name?.split(' ')[0]}</span>
+                            <div className="flex -space-x-1">
+                              {empIds.slice(0, 2).map(id => {
+                                const emp = employees.find(e => e.id === id);
+                                const ini = emp?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?';
+                                return (
+                                  <div key={id} className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[8px] font-bold text-primary border border-white dark:border-dark-surface" title={emp?.name}>{ini}</div>
+                                );
+                              })}
+                            </div>
+                            <span className={`text-xs ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>
+                              {firstEmp?.name?.split(' ')[0]}{empIds.length > 1 ? ` +${empIds.length - 1}` : ''}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-[10px] font-bold uppercase ${task.priority === 'Critical' ? 'text-red-600' : task.priority === 'High' ? 'text-orange-600' : dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.priority}</span>
@@ -374,8 +485,8 @@ const Tasks: React.FC = () => {
                     onClick={() => setCurrentPage(i + 1)}
                     aria-current={currentPage === i + 1 ? 'page' : undefined}
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${currentPage === i + 1
-                        ? 'z-10 bg-primary text-white focus-visible:outline-primary'
-                        : `text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 ${dc ? 'bg-dark-bg text-dark-text-bright ring-dark-border hover:bg-dark-surface' : ''}`
+                      ? 'z-10 bg-primary text-white focus-visible:outline-primary'
+                      : `text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 ${dc ? 'bg-dark-bg text-dark-text-bright ring-dark-border hover:bg-dark-surface' : ''}`
                       }`}
                   >
                     {i + 1}
@@ -414,22 +525,12 @@ const Tasks: React.FC = () => {
                   className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>Project <span className="text-red-500">*</span></label>
-                  <select value={projectId} onChange={e => setProjectId(e.target.value)}
-                    className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} required>
-                    <option value="">Select Project</option>
-                    {activeProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>Assign To <span className="text-red-500">*</span></label>
-                  <select value={assigneeId} onChange={e => setAssigneeId(e.target.value)}
-                    className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} required>
-                    <option value="">Select Employee</option>
-                    {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                  </select>
-                </div>
+                <MultiSelect label="Project" required placeholder="Select project(s)..."
+                  options={activeProjects.map(p => ({ id: p.id, name: p.name }))}
+                  selected={projectIds} onChange={setProjectIds} dark={dc} />
+                <MultiSelect label="Assign To" required placeholder="Select employee(s)..."
+                  options={activeEmployees.map(e => ({ id: e.id, name: e.name }))}
+                  selected={assigneeIds} onChange={setAssigneeIds} dark={dc} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -475,22 +576,12 @@ const Tasks: React.FC = () => {
                     className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>Project <span className="text-red-500">*</span></label>
-                    <select value={projectId} onChange={e => setProjectId(e.target.value)}
-                      className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} required>
-                      <option value="">Select Project</option>
-                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>Assign To <span className="text-red-500">*</span></label>
-                    <select value={assigneeId} onChange={e => setAssigneeId(e.target.value)}
-                      className={`w-full border rounded text-sm px-3 py-2 ${dc ? 'bg-dark-bg border-dark-border text-dark-text-bright' : 'bg-atlassian-neutral border-atlassian-border'} focus:ring-1 focus:ring-primary`} required>
-                      <option value="">Select Employee</option>
-                      {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                    </select>
-                  </div>
+                  <MultiSelect label="Project" required placeholder="Select project(s)..."
+                    options={projects.map(p => ({ id: p.id, name: p.name }))}
+                    selected={projectIds} onChange={setProjectIds} dark={dc} />
+                  <MultiSelect label="Assign To" required placeholder="Select employee(s)..."
+                    options={employees.map(e => ({ id: e.id, name: e.name }))}
+                    selected={assigneeIds} onChange={setAssigneeIds} dark={dc} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

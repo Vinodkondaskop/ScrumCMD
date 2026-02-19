@@ -24,7 +24,7 @@ const EmployeeProfile: React.FC = () => {
     );
 
     const empTasks = useMemo(() => {
-        let result = tasks.filter(t => t.assignedToId === id);
+        let result = tasks.filter(t => t.assignedToId.split(',').includes(id!));
         if (dateFrom) result = result.filter(t => t.dueDate >= dateFrom);
         if (dateTo) result = result.filter(t => t.dueDate <= dateTo);
         if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
@@ -33,7 +33,7 @@ const EmployeeProfile: React.FC = () => {
 
     const todayStr = new Date().toISOString().split('T')[0];
     const initials = employee.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    const allEmpTasks = tasks.filter(t => t.assignedToId === id);
+    const allEmpTasks = tasks.filter(t => t.assignedToId.split(',').includes(id!));
     const stats = {
         total: allEmpTasks.length,
         done: allEmpTasks.filter(t => t.status === TaskStatus.DONE).length,
@@ -121,7 +121,7 @@ const EmployeeProfile: React.FC = () => {
                                             {task.title}
                                             {isOverdue && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-sm uppercase">Overdue</span>}
                                         </td>
-                                        <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{projects.find(p => p.id === task.projectId)?.name}</td>
+                                        <td className={`px-5 py-4 text-sm ${dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.projectId.split(',').filter(Boolean).map(pid => projects.find(p => p.id === pid)?.name).filter(Boolean).join(', ')}</td>
                                         <td className={`px-5 py-4 text-sm ${isOverdue ? 'text-red-600 font-bold' : dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.dueDate}</td>
                                         <td className="px-5 py-4">
                                             <span className={`text-[10px] font-bold uppercase ${task.priority === 'Critical' ? 'text-red-600' : task.priority === 'High' ? 'text-orange-600' : dc ? 'text-dark-text' : 'text-atlassian-subtle'}`}>{task.priority}</span>

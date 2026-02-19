@@ -117,7 +117,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteEmployee = async (id: string) => {
     await fetch(`${API_BASE}/employees/${id}`, { method: 'DELETE' });
     setEmployees(prev => prev.filter(emp => emp.id !== id));
-    setTasks(prev => prev.map(task => task.assignedToId === id ? { ...task, assignedToId: '' } : task));
+    setTasks(prev => prev.map(task => {
+      const ids = task.assignedToId.split(',').filter(eid => eid !== id);
+      return { ...task, assignedToId: ids.join(',') };
+    }));
     showToast('Employee removed', 'info');
   };
 
@@ -130,7 +133,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteProject = async (id: string) => {
     await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
     setProjects(prev => prev.filter(proj => proj.id !== id));
-    setTasks(prev => prev.filter(task => task.projectId !== id));
+    setTasks(prev => prev.map(task => {
+      const ids = task.projectId.split(',').filter(pid => pid !== id);
+      return { ...task, projectId: ids.join(',') };
+    }));
     showToast('Project deleted', 'info');
   };
 
