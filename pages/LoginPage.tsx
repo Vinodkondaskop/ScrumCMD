@@ -61,9 +61,9 @@ const LoginPage: React.FC = () => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full py-2.5 bg-atlassian-blue dark:bg-dark-accent hover:bg-atlassian-blue-dark dark:hover:bg-opacity-90 text-white font-bold rounded transition-colors shadow-sm flex items-center justify-center gap-2"
+                        className="w-full py-2.5 bg-atlassian-blue dark:bg-dark-accent hover:bg-atlassian-blue-dark dark:hover:bg-opacity-90 font-bold rounded transition-colors shadow-sm flex items-center justify-center gap-2"
                     >
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>login</span>
+
                         Login
                     </button>
                 </form>
