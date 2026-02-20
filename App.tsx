@@ -10,6 +10,7 @@ import Tasks from './pages/Tasks';
 import MeetingMinutes from './pages/MeetingMinutes';
 import ProjectPlans from './pages/ProjectPlans';
 import Reports from './pages/Reports';
+import LoginPage from './pages/LoginPage';
 import Celebration from './components/Celebration';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastProvider } from './context/ToastContext';
@@ -101,6 +102,12 @@ const GlobalSearch: React.FC = () => {
   );
 };
 
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+};
+
 const AppContent: React.FC = () => {
   const { dark } = useTheme();
   const { showCelebration, setShowCelebration } = useData();
@@ -108,37 +115,47 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
-      <div className={`flex h-screen overflow-hidden font-display ${dark ? 'bg-dark-bg' : 'bg-background-light'}`}>
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className={`flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden ${dark ? 'bg-dark-surface' : 'bg-white'}`}>
-          {/* Top Header with Search */}
-          <div className={`flex items-center gap-3 px-4 md:px-8 py-3 border-b ${dark ? 'border-dark-border' : 'border-atlassian-border'}`}>
-            {/* Hamburger (mobile only) */}
-            <button onClick={() => setSidebarOpen(true)}
-              className={`lg:hidden p-1 rounded ${dark ? 'text-dark-text hover:bg-dark-bg' : 'text-atlassian-subtle hover:bg-atlassian-neutral'}`}>
-              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu</span>
-            </button>
-            <GlobalSearch />
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/daily-update" element={<DailyUpdateForm />} />
-                <Route path="/employees" element={<Employees />} />
-                <Route path="/employees/:id" element={<EmployeeProfile />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/meetings" element={<MeetingMinutes />} />
-                <Route path="/project-plans" element={<ProjectPlans />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-          </div>
-        </main>
-        {showCelebration && <Celebration onComplete={() => setShowCelebration(false)} />}
-      </div>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <div className={`flex h-screen overflow-hidden font-display ${dark ? 'bg-dark-bg' : 'bg-background-light'}`}>
+                <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                <main className={`flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden ${dark ? 'bg-dark-surface' : 'bg-white'}`}>
+                  {/* Top Header with Search */}
+                  <div className={`flex items-center gap-3 px-4 md:px-8 py-3 border-b ${dark ? 'border-dark-border' : 'border-atlassian-border'}`}>
+                    {/* Hamburger (mobile only) */}
+                    <button onClick={() => setSidebarOpen(true)}
+                      className={`lg:hidden p-1 rounded ${dark ? 'text-dark-text hover:bg-dark-bg' : 'text-atlassian-subtle hover:bg-atlassian-neutral'}`}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu</span>
+                    </button>
+                    <GlobalSearch />
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                    <div className="max-w-7xl mx-auto">
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/daily-update" element={<DailyUpdateForm />} />
+                        <Route path="/employees" element={<Employees />} />
+                        <Route path="/employees/:id" element={<EmployeeProfile />} />
+                        <Route path="/projects" element={<Projects />} />
+                        <Route path="/tasks" element={<Tasks />} />
+                        <Route path="/meetings" element={<MeetingMinutes />} />
+                        <Route path="/project-plans" element={<ProjectPlans />} />
+                        <Route path="/reports" element={<Reports />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </div>
+                  </div>
+                </main>
+                {showCelebration && <Celebration onComplete={() => setShowCelebration(false)} />}
+              </div>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 };

@@ -9,6 +9,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { dark, toggleDark } = useTheme();
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    window.location.reload();
+  };
   const navItems = [
     { name: 'Dashboard', path: '/', icon: 'dashboard' },
     { name: 'Assign Task', path: '/daily-update', icon: 'add_box' },
@@ -75,6 +79,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <span className="material-symbols-outlined !text-white" style={{ fontSize: '16px' }}>add</span>
             <span className="text-sm">Assign Task</span>
           </NavLink>
+          <button onClick={handleLogout}
+            className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'} border border-transparent`}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
+            Logout
+          </button>
         </div>
       </aside>
     </>
